@@ -1,0 +1,170 @@
+from sqlalchemy.orm import Session
+from app.models import Todo, User
+
+
+# =====================
+# TODO FUNCTIONS
+# =====================
+
+def create_todo(
+    db: Session,
+    title: str,
+    priority: str,
+    due_date
+):
+    todo = Todo(
+        title=title,
+        priority=priority,
+        due_date=due_date
+    )
+
+    db.add(todo)
+    db.commit()
+    db.refresh(todo)
+
+    return todo
+
+
+def get_todos(db: Session):
+    return db.query(Todo).filter(
+        Todo.is_deleted == False
+    ).all()
+
+
+def get_todo(db: Session, todo_id: int):
+    return db.query(Todo).filter(
+        Todo.id == todo_id
+    ).first()
+
+
+def update_todo(
+    db: Session,
+    todo_id: int,
+    title: str,
+    completed: bool,
+    priority: str,
+    due_date
+):
+    todo = get_todo(db, todo_id)
+
+    if todo:
+        todo.title = title
+        todo.completed = completed
+        todo.priority = priority
+        todo.due_date = due_date
+
+        db.commit()
+        db.refresh(todo)
+
+    return todo
+
+
+def move_to_trash(db: Session, todo_id: int):
+    todo = get_todo(db, todo_id)
+
+    if todo:
+        todo.is_deleted = True
+
+        db.commit()
+        db.refresh(todo)
+
+    return todo
+
+
+def get_trash(db: Session):
+    return db.query(Todo).filter(
+        Todo.is_deleted == True
+    ).all()
+
+
+def restore_todo(db: Session, todo_id: int):
+    todo = get_todo(db, todo_id)
+
+    if todo:
+        todo.is_deleted = False
+
+        db.commit()
+        db.refresh(todo)
+
+    return todo
+
+
+def permanent_delete(db: Session, todo_id: int):
+    todo = get_todo(db, todo_id)
+
+    if todo:
+        db.delete(todo)
+        db.commit()
+
+    return todo
+
+
+def search_todos(db: Session, keyword: str):
+    return db.query(Todo).filter(
+        Todo.is_deleted == False,
+        Todo.title.ilike(f"%{keyword}%")
+    ).all()
+
+def get_pending_todos(db: Session):
+    return db.query(Todo).filter(
+        Todo.completed == False,
+        Todo.is_deleted == False
+    ).all()
+
+
+def get_completed_todos(db: Session):
+    return db.query(Todo).filter(
+        Todo.completed == True,
+        Todo.is_deleted == False
+    ).all()
+
+
+
+def get_high_priority_todos(db: Session):
+    return db.query(Todo).filter(
+        Todo.priority == "High",
+        Todo.is_deleted == False
+    ).all()
+
+
+def get_medium_priority_todos(db: Session):
+    return db.query(Todo).filter(
+        Todo.priority == "Medium",
+        Todo.is_deleted == False
+    ).all()
+
+
+def get_low_priority_todos(db: Session):
+    return db.query(Todo).filter(
+        Todo.priority == "Low",
+        Todo.is_deleted == False
+    ).all()
+
+# =====================
+# USER FUNCTIONS
+# =====================
+
+def get_user_by_username(
+    db: Session,
+    username: str
+):
+    return db.query(User).filter(
+        User.username == username
+    ).first()
+
+
+def create_user(
+    db: Session,
+    username: str,
+    hashed_password: str
+):
+    user = User(
+        username=username,
+        hashed_password=hashed_password
+    )
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    return user
