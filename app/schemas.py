@@ -35,6 +35,7 @@ class TodoResponse(BaseModel):
 # AUTH SCHEMAS
 # =========================
 
+
 class UserCreate(BaseModel):
     username: str
     password: str

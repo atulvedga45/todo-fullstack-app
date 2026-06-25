@@ -23,15 +23,14 @@ class Todo(Base):
         default=False
     )
 
-
     priority = Column(
-    String,
-    default="Medium"
+        String,
+        default="Medium"
     )
 
     due_date = Column(
-    DateTime,
-    nullable=True
+        DateTime,
+        nullable=True
     )
 
     is_deleted = Column(

@@ -1,8 +1,16 @@
+from dotenv import load_dotenv
 import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
+# .env file load कर
+load_dotenv()
+
+# Environment variable मधून URL घे
 DATABASE_URL = os.getenv("DATABASE_URL")
+
+print("DATABASE_URL =", DATABASE_URL)
 
 engine = create_engine(DATABASE_URL)
 
@@ -13,6 +21,7 @@ SessionLocal = sessionmaker(
 )
 
 Base = declarative_base()
+
 
 def get_db():
     db = SessionLocal()

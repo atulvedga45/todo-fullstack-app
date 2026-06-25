@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
 
 # IMPORTANT
-from app import models
 
 from app.routers import todos
 from app.routers import auth

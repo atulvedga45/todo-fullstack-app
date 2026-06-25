@@ -105,6 +105,7 @@ def search_todos(db: Session, keyword: str):
         Todo.title.ilike(f"%{keyword}%")
     ).all()
 
+
 def get_pending_todos(db: Session):
     return db.query(Todo).filter(
         Todo.completed == False,
@@ -117,7 +118,6 @@ def get_completed_todos(db: Session):
         Todo.completed == True,
         Todo.is_deleted == False
     ).all()
-
 
 
 def get_high_priority_todos(db: Session):
@@ -143,6 +143,7 @@ def get_low_priority_todos(db: Session):
 # =====================
 # USER FUNCTIONS
 # =====================
+
 
 def get_user_by_username(
     db: Session,

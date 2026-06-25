@@ -7,7 +7,6 @@ from app.schemas import TodoCreate, TodoUpdate
 from app.crud import (
     create_todo,
     get_todos,
-    get_todo,
     update_todo,
     move_to_trash,
     get_trash,
@@ -32,18 +31,18 @@ def add_todo(
     db: Session = Depends(get_db)
 ):
     return create_todo(
-    db,
-    todo.title,
-    todo.priority,
-    todo.due_date
-)
+        db,
+        todo.title,
+        todo.priority,
+        todo.due_date
+    )
+
 
 @router.get("/")
 def read_todos(
     db: Session = Depends(get_db)
 ):
     return get_todos(db)
-
 
 
 @router.get("/pending")
@@ -58,8 +57,6 @@ def completed_todos(
     db: Session = Depends(get_db)
 ):
     return get_completed_todos(db)
-
-
 
 
 @router.get("/high")
@@ -83,7 +80,6 @@ def low_priority_todos(
     return get_low_priority_todos(db)
 
 
-
 @router.get("/search")
 def search(
     q: str = Query(...),
@@ -99,13 +95,13 @@ def edit_todo(
     db: Session = Depends(get_db)
 ):
     updated = update_todo(
-    db,
-    todo_id,
-    todo.title,
-    todo.completed,
-    todo.priority,
-    todo.due_date
-)
+        db,
+        todo_id,
+        todo.title,
+        todo.completed,
+        todo.priority,
+        todo.due_date
+    )
 
     if not updated:
         raise HTTPException(
