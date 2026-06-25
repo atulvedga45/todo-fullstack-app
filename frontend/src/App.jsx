@@ -1,6 +1,10 @@
+
+
+
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
+import Register from "./Register";
 
 const API = "https://todo-fullstack-app-1-nqk4.onrender.com/todos";
 
@@ -145,6 +149,8 @@ function App() {
   const totalCompleted = todos.filter(t => t.completed).length;
 
   return (
+     <>
+     <Register />
     <div className="container relative-container">
       <h1>📋 Todo List</h1>
 
@@ -324,7 +330,9 @@ function App() {
         Total Items: {todos.length + trash.length}
       </h3>
     </div>
+    </>
   );
+  
 }
 
 export default App;
