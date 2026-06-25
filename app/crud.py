@@ -8,11 +8,13 @@ from app.models import Todo, User
 
 def create_todo(
     db: Session,
+    user_id: int,
     title: str,
     priority: str,
     due_date
 ):
     todo = Todo(
+        user_id=user_id,
         title=title,
         priority=priority,
         due_date=due_date

@@ -32,6 +32,7 @@ def add_todo(
 ):
     return create_todo(
         db,
+        1,
         todo.title,
         todo.priority,
         todo.due_date

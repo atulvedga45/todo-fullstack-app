@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
 import Register from "./Register";
+import Login from "./Login";
 
 const API = "https://todo-fullstack-app-1-nqk4.onrender.com/todos";
 
@@ -151,6 +152,8 @@ function App() {
   return (
      <>
      <Register />
+     <Login />
+     
     <div className="container relative-container">
       <h1>📋 Todo List</h1>
 
