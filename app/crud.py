@@ -27,8 +27,12 @@ def create_todo(
     return todo
 
 
-def get_todos(db: Session):
+def get_todos(
+    db: Session,
+    user_id: int
+):
     return db.query(Todo).filter(
+        Todo.user_id == user_id,
         Todo.is_deleted == False
     ).all()
 

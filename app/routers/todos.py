@@ -1,8 +1,12 @@
+
+from app.dependencies import get_current_user
+from app.models import User
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.schemas import TodoCreate, TodoUpdate
+
 
 from app.crud import (
     create_todo,
@@ -28,11 +32,12 @@ router = APIRouter(
 @router.post("/")
 def add_todo(
     todo: TodoCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     return create_todo(
         db,
-        1,
+        current_user.id,
         todo.title,
         todo.priority,
         todo.due_date
@@ -41,9 +46,13 @@ def add_todo(
 
 @router.get("/")
 def read_todos(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    return get_todos(db)
+    return get_todos(
+        db,
+        current_user.id
+    )
 
 
 @router.get("/pending")
