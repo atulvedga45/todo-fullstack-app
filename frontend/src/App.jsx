@@ -23,106 +23,189 @@ function App() {
 
   const [showTrash, setShowTrash] = useState(false);
 
-  const loadTodos = async () => {
-    try {
-      const res = await axios.get(`${API}/`);
-      setTodos(res.data);
-    } catch (err) {
-      console.error("Error loading todos:", err);
-    }
-  };
 
-  const loadTrash = async () => {
-    try {
-      const res = await axios.get(`${API}/trash`);
-      setTrash(res.data);
-    } catch (err) {
-      console.error("Error loading trash:", err);
-    }
-  };
 
+
+
+
+
+const loadTodos = async () => {
+  const token = localStorage.getItem("token");
+
+  console.log("TOKEN =", token);
+
+  try {
+    const res = await axios.get(`${API}/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setTodos(res.data);
+  } catch (err) {
+    console.error("Error loading todos:", err);
+  }
+};
+
+
+
+
+
+
+ const loadTrash = async () => {
+  const token = localStorage.getItem("token");
+
+  try {
+    const res = await axios.get(`${API}/trash`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setTrash(res.data);
+  } catch (err) {
+    console.error("Error loading trash:", err);
+  }
+};
   useEffect(() => {
     loadTodos();
     loadTrash();
   }, []);
 
-  const addTodo = async () => {
-    if (!title.trim()) return;
+ const addTodo = async () => {
+  if (!title.trim()) return;
 
-    try {
-      await axios.post(`${API}/`, {
+  const token = localStorage.getItem("token");
+
+  try {
+    await axios.post(
+      `${API}/`,
+      {
         title: title.trim(),
         priority: priority,
-      });
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-      setTitle("");
-      setPriority("Medium");
-      loadTodos();
-    } catch (err) {
-      console.error("Error adding todo:", err);
-    }
-  };
+    setTitle("");
+    setPriority("Medium");
+    loadTodos();
+  } catch (err) {
+    console.error("Error adding todo:", err);
+  }
+};
+ const moveToTrash = async (id) => {
+  const token = localStorage.getItem("token");
 
-  const moveToTrash = async (id) => {
-    try {
-      await axios.delete(`${API}/${id}`);
-      await Promise.all([loadTodos(), loadTrash()]);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  try {
+    await axios.delete(`${API}/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    await Promise.all([loadTodos(), loadTrash()]);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const restoreTodo = async (id) => {
-    try {
-      await axios.patch(`${API}/restore/${id}`);
-      await Promise.all([loadTodos(), loadTrash()]);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const token = localStorage.getItem("token");
+
+  try {
+    await axios.patch(
+      `${API}/restore/${id}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    await Promise.all([loadTodos(), loadTrash()]);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const deleteForever = async (id) => {
-    if (!window.confirm("Delete permanently?")) return;
-    try {
-      await axios.delete(`${API}/permanent/${id}`);
-      loadTrash();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  if (!window.confirm("Delete permanently?")) return;
+
+  const token = localStorage.getItem("token");
+
+  try {
+    await axios.delete(`${API}/permanent/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    loadTrash();
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const startEdit = (todo) => {
     setEditingId(todo.id);
     setEditTitle(todo.title);
   };
 
-  const saveEdit = async (todo) => {
-    try {
-      await axios.put(`${API}/${todo.id}`, {
+ const saveEdit = async (todo) => {
+  const token = localStorage.getItem("token");
+
+  try {
+    await axios.put(
+      `${API}/${todo.id}`,
+      {
         title: editTitle,
         completed: todo.completed,
         priority: todo.priority,
-      });
-      setEditingId(null);
-      setEditTitle("");
-      loadTodos();
-    } catch (err) {
-      console.error("Edit Error:", err);
-    }
-  };
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-  const toggleComplete = async (todo) => {
-    try {
-      await axios.put(`${API}/${todo.id}`, {
+    setEditingId(null);
+    setEditTitle("");
+    loadTodos();
+  } catch (err) {
+    console.error("Edit Error:", err);
+  }
+};
+
+ const toggleComplete = async (todo) => {
+  const token = localStorage.getItem("token");
+
+  try {
+    await axios.put(
+      `${API}/${todo.id}`,
+      {
         title: todo.title,
         completed: !todo.completed,
         priority: todo.priority,
-      });
-      loadTodos();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    loadTodos();
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const filteredTodos = todos.filter((todo) => {
     const matchesSearch = todo.title.toLowerCase().includes(searchQuery.toLowerCase());
