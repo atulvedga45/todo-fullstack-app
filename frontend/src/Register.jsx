@@ -22,7 +22,8 @@ try {
   console.log(response.data);
 } catch (error) {
   console.error(error);
-  alert("Registration Failed");
+  console.log(error.response?.data);
+  alert(JSON.stringify(error.response?.data));
 }
 
 
