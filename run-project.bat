@@ -1,9 +1,5 @@
 @echo off
-
-cd /d C:\Users\Atul\Desktop\fastapi-project
-
+cd /d "%~dp0"
 call venv\Scripts\activate.bat
-
 npm run dev
-
 pause

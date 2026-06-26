@@ -35,12 +35,18 @@ class TodoResponse(BaseModel):
 # AUTH SCHEMAS
 # =========================
 
+class OTPRequest(BaseModel):
+    email: str
 
-class UserCreate(BaseModel):
-    username: str
-    password: str
+class OTPVerify(BaseModel):
+    email: str
+    otp: str
 
+class UserProfileResponse(BaseModel):
+    id: int
+    email: str
+    username: str | None = None
+    profile_picture: str | None = None
 
-class UserLogin(BaseModel):
-    username: str
-    password: str
+    class Config:
+        from_attributes = True

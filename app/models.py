@@ -65,13 +65,30 @@ class User(Base):
         index=True
     )
 
-    username = Column(
+    email = Column(
         String,
         unique=True,
-        nullable=False
+        nullable=False,
+        index=True
     )
 
-    hashed_password = Column(
+    username = Column(
         String,
-        nullable=False
+        nullable=True
     )
+
+    profile_picture = Column(
+        String,
+        nullable=True
+    )
+
+    otp = Column(
+        String,
+        nullable=True
+    )
+
+    otp_expiry = Column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+

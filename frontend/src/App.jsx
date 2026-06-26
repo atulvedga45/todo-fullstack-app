@@ -4,10 +4,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
-import Register from "./Register";
-import Login from "./Login";
+import Auth from "./Auth";
 
-const API = "https://todo-fullstack-app-1-nqk4.onrender.com/todos";
+const API = "http://localhost:8000/todos";
 
 function App() {
   const [todos, setTodos] = useState([]);
@@ -23,54 +22,143 @@ function App() {
 
   const [showTrash, setShowTrash] = useState(false);
 
+  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [authView, setAuthView] = useState("login");
 
+  // Settings & Theme State
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [usernameInput, setUsernameInput] = useState("");
+  const [profilePicInput, setProfilePicInput] = useState("");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
 
-
-
-
-
-const loadTodos = async () => {
-  const token = localStorage.getItem("token");
-
-  console.log("TOKEN =", token);
-
-  try {
-    const res = await axios.get(`${API}/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    setTodos(res.data);
-  } catch (err) {
-    console.error("Error loading todos:", err);
-  }
-};
-
-
-
-
-
-
- const loadTrash = async () => {
-  const token = localStorage.getItem("token");
-
-  try {
-    const res = await axios.get(`${API}/trash`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    setTrash(res.data);
-  } catch (err) {
-    console.error("Error loading trash:", err);
-  }
-};
+  // Apply Light/Dark mode
   useEffect(() => {
-    loadTodos();
-    loadTrash();
-  }, []);
+    if (theme === "light") {
+      document.body.classList.add("light-mode");
+    } else {
+      document.body.classList.remove("light-mode");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+    setUser(null);
+    setUsernameInput("");
+    setProfilePicInput("");
+    setTodos([]);
+    setTrash([]);
+  };
+
+  const loadProfile = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const res = await axios.get("http://localhost:8000/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setUser(res.data);
+      setUsernameInput(res.data.username || "");
+      setProfilePicInput(res.data.profile_picture || "");
+    } catch (err) {
+      console.error("Error loading profile:", err);
+      if (err.response && err.response.status === 401) {
+        handleLogout();
+      }
+    }
+  };
+
+  const loadTodos = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await axios.get(`${API}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setTodos(res.data);
+    } catch (err) {
+      console.error("Error loading todos:", err);
+      if (err.response && err.response.status === 401) {
+        handleLogout();
+      }
+    }
+  };
+
+  const loadTrash = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await axios.get(`${API}/trash`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setTrash(res.data);
+    } catch (err) {
+      console.error("Error loading trash:", err);
+      if (err.response && err.response.status === 401) {
+        handleLogout();
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      loadProfile();
+      loadTodos();
+      loadTrash();
+    }
+  }, [token]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Image size should be less than 2MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfilePicInput(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const saveProfile = async (e) => {
+    if (e) e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await axios.put("http://localhost:8000/auth/profile", {
+        username: usernameInput,
+        profile_picture: profilePicInput
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setUser(res.data);
+      alert("Profile updated successfully!");
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      if (err.response && err.response.status === 401) {
+        handleLogout();
+      } else {
+        alert("Failed to update profile");
+      }
+    }
+  };
 
  const addTodo = async () => {
   if (!title.trim()) return;
@@ -232,13 +320,48 @@ const loadTodos = async () => {
   const totalPending = todos.filter(t => !t.completed).length;
   const totalCompleted = todos.filter(t => t.completed).length;
 
+  if (!token) {
+    return (
+      <div className="auth-wrapper">
+        <div className="auth-container">
+          <h1 className="auth-welcome-title">Welcome to Todo App</h1>
+          <Auth onLoginSuccess={(newToken) => setToken(newToken)} />
+        </div>
+      </div>
+    );
+  }
+
+  const getInitials = (email, username) => {
+    if (username && username.trim()) {
+      return username.trim().substring(0, 2).toUpperCase();
+    }
+    if (email) {
+      return email.substring(0, 2).toUpperCase();
+    }
+    return "U";
+  };
+
   return (
      <>
-     <Register />
-     <Login />
-     
     <div className="container relative-container">
-      <h1>📋 Todo List</h1>
+      <div className="header-container">
+        <h1>📋 Todo List</h1>
+        <div className="header-right">
+          <button className="btn-settings-trigger" onClick={() => setIsSettingsOpen(true)}>
+            {user && user.profile_picture ? (
+              <img src={user.profile_picture} alt="Avatar" className="user-badge-avatar" />
+            ) : (
+              <div className="user-badge-avatar">
+                {user ? getInitials(user.email, user.username) : "U"}
+              </div>
+            )}
+            <span className="user-badge-name">
+              {user && user.username ? user.username : (user ? user.email.split("@")[0] : "Settings")}
+            </span>
+            ⚙️
+          </button>
+        </div>
+      </div>
 
       <div className="stats-container">
         <div className="stat-box pending-box">
@@ -415,6 +538,86 @@ const loadTodos = async () => {
       <h3 className="footer">
         Total Items: {todos.length + trash.length}
       </h3>
+
+      {isSettingsOpen && (
+        <div className="modal-overlay" onClick={() => setIsSettingsOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>⚙️ App Settings</h2>
+              <button className="btn-close-modal" onClick={() => setIsSettingsOpen(false)}>×</button>
+            </div>
+
+            <div className="settings-section">
+              <h3>Profile Settings</h3>
+              <form onSubmit={saveProfile} className="profile-form">
+                <label htmlFor="avatar-file-input" className="profile-avatar-upload">
+                  {profilePicInput ? (
+                    <img src={profilePicInput} alt="Profile Preview" />
+                  ) : (
+                    <div className="avatar-placeholder">
+                      {user ? getInitials(user.email, usernameInput) : "U"}
+                    </div>
+                  )}
+                  <div className="avatar-upload-overlay">Upload</div>
+                </label>
+                <input
+                  id="avatar-file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  style={{ display: "none" }}
+                />
+
+                <div className="profile-input-group">
+                  <label htmlFor="profile-username">Username</label>
+                  <input
+                    id="profile-username"
+                    type="text"
+                    placeholder="Enter your name"
+                    value={usernameInput}
+                    onChange={(e) => setUsernameInput(e.target.value)}
+                    className="profile-input"
+                  />
+                </div>
+
+                <button type="submit" className="btn-save-profile">
+                  Save Profile
+                </button>
+              </form>
+            </div>
+
+            <div className="settings-section">
+              <h3>Theme Settings</h3>
+              <div className="theme-option">
+                <span className="theme-label">Theme Mode</span>
+                <div className="theme-toggle-buttons">
+                  <button
+                    className={`theme-btn ${theme === "light" ? "active" : ""}`}
+                    onClick={() => setTheme("light")}
+                  >
+                    ☀️ Light
+                  </button>
+                  <button
+                    className={`theme-btn ${theme === "dark" ? "active" : ""}`}
+                    onClick={() => setTheme("dark")}
+                  >
+                    🌙 Dark
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="settings-logout-container">
+              <button className="btn-settings-logout" onClick={() => {
+                setIsSettingsOpen(false);
+                handleLogout();
+              }}>
+                🚪 Logout from Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </>
   );

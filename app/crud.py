@@ -37,21 +37,23 @@ def get_todos(
     ).all()
 
 
-def get_todo(db: Session, todo_id: int):
+def get_todo(db: Session, todo_id: int, user_id: int):
     return db.query(Todo).filter(
-        Todo.id == todo_id
+        Todo.id == todo_id,
+        Todo.user_id == user_id
     ).first()
 
 
 def update_todo(
     db: Session,
     todo_id: int,
+    user_id: int,
     title: str,
     completed: bool,
     priority: str,
     due_date
 ):
-    todo = get_todo(db, todo_id)
+    todo = get_todo(db, todo_id, user_id)
 
     if todo:
         todo.title = title
@@ -65,8 +67,8 @@ def update_todo(
     return todo
 
 
-def move_to_trash(db: Session, todo_id: int):
-    todo = get_todo(db, todo_id)
+def move_to_trash(db: Session, todo_id: int, user_id: int):
+    todo = get_todo(db, todo_id, user_id)
 
     if todo:
         todo.is_deleted = True
@@ -77,14 +79,15 @@ def move_to_trash(db: Session, todo_id: int):
     return todo
 
 
-def get_trash(db: Session):
+def get_trash(db: Session, user_id: int):
     return db.query(Todo).filter(
+        Todo.user_id == user_id,
         Todo.is_deleted == True
     ).all()
 
 
-def restore_todo(db: Session, todo_id: int):
-    todo = get_todo(db, todo_id)
+def restore_todo(db: Session, todo_id: int, user_id: int):
+    todo = get_todo(db, todo_id, user_id)
 
     if todo:
         todo.is_deleted = False
@@ -95,8 +98,8 @@ def restore_todo(db: Session, todo_id: int):
     return todo
 
 
-def permanent_delete(db: Session, todo_id: int):
-    todo = get_todo(db, todo_id)
+def permanent_delete(db: Session, todo_id: int, user_id: int):
+    todo = get_todo(db, todo_id, user_id)
 
     if todo:
         db.delete(todo)
@@ -105,43 +108,49 @@ def permanent_delete(db: Session, todo_id: int):
     return todo
 
 
-def search_todos(db: Session, keyword: str):
+def search_todos(db: Session, user_id: int, keyword: str):
     return db.query(Todo).filter(
+        Todo.user_id == user_id,
         Todo.is_deleted == False,
         Todo.title.ilike(f"%{keyword}%")
     ).all()
 
 
-def get_pending_todos(db: Session):
+def get_pending_todos(db: Session, user_id: int):
     return db.query(Todo).filter(
+        Todo.user_id == user_id,
         Todo.completed == False,
         Todo.is_deleted == False
     ).all()
 
 
-def get_completed_todos(db: Session):
+def get_completed_todos(db: Session, user_id: int):
     return db.query(Todo).filter(
+        Todo.user_id == user_id,
         Todo.completed == True,
         Todo.is_deleted == False
     ).all()
 
 
-def get_high_priority_todos(db: Session):
+def get_high_priority_todos(db: Session, user_id: int):
     return db.query(Todo).filter(
+        Todo.user_id == user_id,
         Todo.priority == "High",
         Todo.is_deleted == False
     ).all()
 
 
-def get_medium_priority_todos(db: Session):
+def get_medium_priority_todos(db: Session, user_id: int):
     return db.query(Todo).filter(
+        Todo.user_id == user_id,
         Todo.priority == "Medium",
         Todo.is_deleted == False
     ).all()
 
 
-def get_low_priority_todos(db: Session):
+def get_low_priority_todos(db: Session, user_id: int):
     return db.query(Todo).filter(
+        Todo.user_id == user_id,
         Todo.priority == "Low",
         Todo.is_deleted == False
     ).all()
@@ -151,27 +160,42 @@ def get_low_priority_todos(db: Session):
 # =====================
 
 
-def get_user_by_username(
+def get_user_by_email(
     db: Session,
-    username: str
+    email: str
 ):
     return db.query(User).filter(
-        User.username == username
+        User.email == email.strip().lower()
     ).first()
 
-
-def create_user(
+def create_user_with_email(
     db: Session,
-    username: str,
-    hashed_password: str
+    email: str
 ):
-    user = User(
-        username=username,
-        hashed_password=hashed_password
-    )
-
+    user = User(email=email.strip().lower())
     db.add(user)
     db.commit()
     db.refresh(user)
+    return user
 
+def set_user_otp(
+    db: Session,
+    user: User,
+    otp: str,
+    expiry
+):
+    user.otp = otp
+    user.otp_expiry = expiry
+    db.commit()
+    db.refresh(user)
+    return user
+
+def clear_user_otp(
+    db: Session,
+    user: User
+):
+    user.otp = None
+    user.otp_expiry = None
+    db.commit()
+    db.refresh(user)
     return user

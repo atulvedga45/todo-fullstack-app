@@ -5,10 +5,9 @@ from jose import jwt
 
 from app.database import get_db
 from app.auth import SECRET_KEY, ALGORITHM
-from app.crud import get_user_by_username
+from app.crud import get_user_by_email
 
 security = HTTPBearer()
-
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -23,9 +22,9 @@ def get_current_user(
             algorithms=[ALGORITHM]
         )
 
-        username = payload.get("sub")
+        email = payload.get("sub")
 
-        if username is None:
+        if email is None:
             raise HTTPException(
                 status_code=401,
                 detail="Invalid token"
@@ -37,9 +36,9 @@ def get_current_user(
             detail="Invalid token"
         )
 
-    user = get_user_by_username(
+    user = get_user_by_email(
         db,
-        username
+        email
     )
 
     if not user:

@@ -28,7 +28,7 @@ app.add_middleware(
     "http://127.0.0.1:5175",
     "http://127.0.0.1:5178",
 
-    "https://todo-fullstack-app-murex.vercel.app"
+    "https://todo-fullstack-app-murex.vercel.app",
     "https://todo-fullstack-3x38ba7jh-vedgaatul730-3497s-projects.vercel.app",
 ],
     allow_credentials=True,
