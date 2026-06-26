@@ -6,7 +6,7 @@ import axios from "axios";
 import "./App.css";
 import Auth from "./Auth";
 
-const API = "http://localhost:8000/todos";
+const API = "https://todo-fullstack-application-e5xk.onrender.com/todos";
 
 function App() {
   const [todos, setTodos] = useState([]);
@@ -56,7 +56,7 @@ function App() {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await axios.get("http://localhost:8000/auth/me", {
+      const res = await axios.get("https://todo-fullstack-application-e5xk.onrender.com/auth/me", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -140,7 +140,7 @@ function App() {
     if (!token) return;
 
     try {
-      const res = await axios.put("http://localhost:8000/auth/profile", {
+      const res = await axios.put("https://todo-fullstack-application-e5xk.onrender.com/auth/profile", {
         username: usernameInput,
         profile_picture: profilePicInput
       }, {
