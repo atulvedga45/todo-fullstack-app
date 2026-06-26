@@ -30,6 +30,7 @@ app.add_middleware(
 
     "https://todo-fullstack-app-murex.vercel.app",
     "https://todo-fullstack-3x38ba7jh-vedgaatul730-3497s-projects.vercel.app",
+    "https://todo-fullstack-application-1.onrender.com",
 ],
     allow_credentials=True,
     allow_methods=["*"],
